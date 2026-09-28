@@ -9,7 +9,7 @@ import { triar, podeChecar, TIPOS } from './triagem.js';
  * Devolve { livro, aba, colunas: [{ numero, nome }], nomeColuna, linhas: [{ linha, rs: [r, ...] }] }
  * (rs tem um resultado de triagem por coluna de telefone, na mesma ordem de colunas).
  */
-export async function lerPlanilha(arquivo, { coluna, aba: nomeAba, ddd, csv } = {}) {
+export async function lerPlanilha(arquivo, { coluna, aba: nomeAba, ddd, csv, apagarFixos = false } = {}) {
   const livro = new ExcelJS.Workbook();
   const ehCsv = csv ?? arquivo.toLowerCase().endsWith('.csv');
   let aba;
@@ -26,7 +26,13 @@ export async function lerPlanilha(arquivo, { coluna, aba: nomeAba, ddd, csv } = 
   for (let i = 2; i <= aba.rowCount; i++) {
     const linha = aba.getRow(i);
     separarNumerosJuntos(linha, colunas, ddd);
-    linhas.push({ linha, rs: colunas.map((c) => triar(textoCelula(linha.getCell(c.numero)), { dddPadrao: ddd })) });
+    const rs = colunas.map((c) => {
+      const r = triar(textoCelula(linha.getCell(c.numero)), { dddPadrao: ddd });
+      if (!apagarFixos || r.tipo !== TIPOS.FIXO) return r;
+      linha.getCell(c.numero).value = null; // telefone fixo apagado da planilha
+      return { ...triar(''), apagado: true };
+    });
+    linhas.push({ linha, rs });
   }
   return { livro, aba, colunas, nomeColuna: colunas.map((c) => c.nome).join(', '), linhas };
 }
@@ -59,6 +65,7 @@ export function resumir(linhas, { ignorarFixos = false } = {}) {
   const numeros = new Set();
   for (const { rs } of linhas) {
     for (const r of rs) {
+      if (r.apagado) porTipo['Fixo (apagado)'] = (porTipo['Fixo (apagado)'] || 0) + 1;
       if (r.tipo === TIPOS.VAZIO) continue;
       porTipo[r.tipo] = (porTipo[r.tipo] || 0) + 1;
       if (vaiChecar(r, ignorarFixos)) numeros.add(r.numero);

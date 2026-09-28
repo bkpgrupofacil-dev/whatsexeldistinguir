@@ -101,6 +101,7 @@ $('form-planilha').onsubmit = async (ev) => {
   for (const campo of ['coluna', 'aba', 'ddd']) dados.append(campo, form[campo].value);
   dados.append('soTriagem', form.soTriagem.checked);
   dados.append('ignorarFixos', form.ignorarFixos.checked);
+  dados.append('apagarFixos', form.apagarFixos.checked);
 
   $('bt-enviar').disabled = true;
   $('envio-erro').hidden = true;
@@ -144,7 +145,7 @@ function renderJob(j) {
       <span class="job-nome">${esc(j.nome)}</span>
       <span class="selo ${j.status === 'concluido' ? 'ok' : j.status === 'pausado' ? 'ruim' : 'espera'}">${soTriagem ? 'Só triagem' : NOMES_STATUS[j.status]}</span>
     </div>
-    <div class="discreto">${quando} · telefones: ${esc(j.coluna)} · ${j.total} linhas${j.opcoes.ignorarFixos ? ' · fixos não checados' : ''}</div>
+    <div class="discreto">${quando} · telefones: ${esc(j.coluna)} · ${j.total} linhas${j.opcoes.apagarFixos ? ' · fixos apagados' : j.opcoes.ignorarFixos ? ' · fixos não checados' : ''}</div>
     ${soTriagem ? '' : `<div class="barra"><div style="width:${pct}%"></div></div>`}
     <div class="numeros">
       ${soTriagem ? '' : `<span>Números checados: ${p.checados} de ${p.aChecar} (${pct}%)</span>
