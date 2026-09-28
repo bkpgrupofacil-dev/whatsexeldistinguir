@@ -1,0 +1,25 @@
+{
+  "name": "whatsexeldistinguir",
+  "version": "1.0.0",
+  "description": "Separa números de telefone de uma planilha entre os que têm e os que não têm WhatsApp",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bkpgrupofacil-dev/whatsexeldistinguir.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bkpgrupofacil-dev/whatsexeldistinguir/issues"
+  },
+  "homepage": "https://github.com/bkpgrupofacil-dev/whatsexeldistinguir#readme",
+  "type": "module",
+  "dependencies": {
+    "baileys": "^7.0.0-rc14",
+    "exceljs": "^4.4.0",
+    "pino": "^10.3.1",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
