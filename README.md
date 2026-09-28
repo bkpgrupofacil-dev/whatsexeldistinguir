@@ -67,15 +67,16 @@ Tudo fica no volume `dados` (montado em `/dados` no backend):
 - **Checar um número**: consulta um número avulso na hora.
 - **Enviar planilha**: a triagem sai na hora; a checagem entra numa fila e vai sendo feita aos poucos, respeitando o intervalo e o limite diário. Dá para pausar, continuar e **baixar o resultado a qualquer momento** (com o que já foi checado).
 
-A planilha de resultado é a original com 5 colunas novas:
+A planilha pode ter **várias colunas de telefone** (ex.: `telefone1`, `telefone2`, `telefone3`...): o sistema acha sozinho todas as colunas cujo nome parece telefone (Telefone, Celular, WhatsApp, Fone...). Para escolher na mão, informe em **Opções** os nomes ou letras separados por vírgula (ex.: `D, E, F`).
+
+A planilha de resultado é a original com colunas novas no fim:
 
 | Coluna | O que é |
 |---|---|
-| Número normalizado | Ex.: `5511987654321` |
-| Tipo | Celular, Fixo, Sem DDD, Inválido, Serviço, Internacional |
-| Observação | Motivo (ex.: "DDD 20 não existe", "Celular antigo, 9 acrescentado") |
-| WhatsApp pelo formato | Palpite: Provável / Improvável / Não |
-| Tem WhatsApp? (checado) | **Sim** (verde) / **Não** (vermelho), resposta do próprio WhatsApp |
+| `<coluna> - tipo` | Para cada coluna de telefone: Celular, Fixo, Sem DDD, Inválido (com o motivo)... |
+| `<coluna> - WhatsApp` | Para cada coluna de telefone: **Sim** (verde) / **Não** (vermelho) / Não checado |
+| Números com WhatsApp | Os números da linha que têm WhatsApp, já no formato `5585999999999` |
+| Tem WhatsApp? | Resumo da linha: **Sim** se algum número tem, **Não** se nenhum tem, ou "Sem número válido" |
 
 ## Uso sem Docker (linha de comando)
 
