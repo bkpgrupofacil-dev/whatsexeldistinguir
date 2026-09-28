@@ -26,7 +26,7 @@ services:
       APP_USUARIO: ${APP_USUARIO:-admin}
       APP_SENHA: ${APP_SENHA:?defina APP_SENHA nas variáveis de ambiente da stack}
     ports:
-      - "${PORTA:-8080}:80"
+      - "${PORTA:-8787}:80"
 
 volumes:
   dados:

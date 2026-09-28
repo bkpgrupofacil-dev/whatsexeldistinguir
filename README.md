@@ -38,7 +38,7 @@ As imagens são publicadas automaticamente no GitHub Container Registry (`ghcr.i
 2. **Stacks** › **Add stack** › **Web editor**: cole o conteúdo de `docker-compose.imagens.yml`.
 3. Adicione as variáveis de ambiente e faça o deploy.
 
-Depois, abra `http://SEU-SERVIDOR:8080`, entre com o usuário e a senha, clique em **Conectar** e leia o QR Code com o celular.
+Depois, abra `http://SEU-SERVIDOR:8787`, entre com o usuário e a senha, clique em **Conectar** e leia o QR Code com o celular.
 
 ### Variáveis de ambiente
 
@@ -46,7 +46,7 @@ Depois, abra `http://SEU-SERVIDOR:8080`, entre com o usuário e a senha, clique 
 |---|---|---|
 | `APP_SENHA` | (obrigatória) | Senha para abrir o painel |
 | `APP_USUARIO` | `admin` | Usuário para abrir o painel |
-| `PORTA` | `8080` | Porta do painel no servidor |
+| `PORTA` | `8787` | Porta do painel no servidor (troque se já estiver em uso) |
 | `INTERVALO_SEGUNDOS` | `5` | Segundos entre cada consulta ao WhatsApp (com variação de ±30%) |
 | `LIMITE_DIARIO` | `300` | Máximo de consultas por dia. Ao atingir, a fila para e continua sozinha no dia seguinte |
 
