@@ -113,3 +113,37 @@ test('corrige o formato dos telefones e separa números juntos', async () => {
   assert.equal(v(5, 2), '991217000'); // sem DDD: não dá para corrigir
   assert.equal(p.aba.getRow(5).getCell(2).fill?.fgColor?.argb, 'FFFFFF00');
 });
+
+test('ignorarFixos deixa os fixos fora da checagem', async () => {
+  const { fila, consultados } = montar();
+  const job = await fila.criar({ buffer: exemplo, nome: 'c.xlsx', opcoes: { ignorarFixos: true } });
+  assert.equal(job.progresso.aChecar, 3); // só os 3 celulares
+  fila.rodar();
+  await ate(() => fila.obter(job.id).status === STATUS.CONCLUIDO);
+  fila.parar();
+  assert.ok(consultados.every((n) => n.length === 13));
+
+  const ExcelJS = (await import('exceljs')).default;
+  const w = new ExcelJS.Workbook();
+  await w.xlsx.load((await fila.resultado(job.id)).buffer);
+  const a = w.worksheets[0];
+  const loja = [...Array(a.rowCount).keys()].map((i) => a.getRow(i + 1)).find((r) => r.getCell(1).value === 'Loja');
+  assert.equal(loja.getCell(5).value, 'Não checado (fixo)');
+  assert.equal(loja.getCell(a.columnCount).value, 'Só telefone fixo');
+});
+
+test('apagarFixos tira os fixos da planilha', async () => {
+  const { fila } = montar();
+  const job = await fila.criar({ buffer: exemplo, nome: 'd.xlsx', opcoes: { apagarFixos: true } });
+  assert.equal(job.progresso.aChecar, 3);
+  assert.equal(job.porTipo['Fixo (apagado)'], 1);
+  assert.equal(job.porTipo.Fixo, undefined);
+
+  const ExcelJS = (await import('exceljs')).default;
+  const w = new ExcelJS.Workbook();
+  await w.xlsx.load((await fila.resultado(job.id)).buffer);
+  const a = w.worksheets[0];
+  const loja = [...Array(a.rowCount).keys()].map((i) => a.getRow(i + 1)).find((r) => r.getCell(1).value === 'Loja');
+  assert.equal(loja.getCell(2).value, null);
+  assert.equal(loja.getCell(a.columnCount).value, 'Sem número válido');
+});

@@ -78,6 +78,8 @@ app.post('/api/planilhas', upload.single('arquivo'), rota(async (req, res) => {
       aba: b.aba?.trim() || undefined,
       ddd: b.ddd?.trim() || undefined,
       soTriagem: b.soTriagem === 'true',
+      ignorarFixos: b.ignorarFixos === 'true',
+      apagarFixos: b.apagarFixos === 'true',
     },
   });
   res.status(201).json(job);

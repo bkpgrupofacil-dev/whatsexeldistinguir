@@ -61,7 +61,7 @@ export class Fila {
       fs.rmSync(dir, { recursive: true, force: true });
       throw new ErroUsuario(`Não consegui ler a planilha: ${e.message}`);
     }
-    const { total, porTipo, numeros } = resumir(planilha.linhas);
+    const { total, porTipo, numeros } = resumir(planilha.linhas, opcoes);
 
     const job = {
       id,
@@ -107,7 +107,7 @@ export class Fila {
   async resultado(id) {
     const job = this.obter(id);
     const planilha = await lerPlanilha(path.join(this.pastaJobs, id, job.entrada), job.opcoes);
-    aplicarResultado(planilha, this.cache.dados, { soTriagem: job.opcoes.soTriagem });
+    aplicarResultado(planilha, this.cache.dados, job.opcoes);
     return { buffer: await planilha.livro.xlsx.writeBuffer(), nome: `${path.parse(job.nome).name}-resultado.xlsx` };
   }
 
