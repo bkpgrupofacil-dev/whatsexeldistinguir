@@ -145,6 +145,51 @@ export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soT
   return { sim, nao };
 }
 
+/**
+ * Planilha limpa: só as colunas do arquivo original (sem as colunas de resultado),
+ * com os telefones corrigidos. Os fixos já chegam apagados se a planilha foi lida com apagarFixos.
+ * soWhatsApp: mantém só os telefones confirmados com WhatsApp e só as linhas que ficaram com algum.
+ * Devolve um novo ExcelJS.Workbook.
+ */
+export function planilhaLimpa({ aba, colunas, linhas }, respostas = {}, { soWhatsApp = false } = {}) {
+  const livro = new ExcelJS.Workbook();
+  const nova = livro.addWorksheet(aba.name);
+  aba.columns?.forEach((c, i) => {
+    if (c.width) nova.getColumn(i + 1).width = c.width;
+  });
+  copiarLinha(aba.getRow(1), nova.getRow(1));
+
+  let destino = 2;
+  for (const { linha, rs } of linhas) {
+    let algum = false;
+    const valores = rs.map((r) => {
+      const numero = r.tipo === TIPOS.INTERNACIONAL ? `+${r.numero}` : r.numero.slice(2);
+      if (soWhatsApp) {
+        if (respostas[r.numero] !== 'Sim') return null;
+        algum = true;
+        return numero;
+      }
+      if (r.tipo === TIPOS.VAZIO) return null; // células só com espaço
+      return r.tipo === TIPOS.CELULAR || r.tipo === TIPOS.FIXO ? numero : undefined; // undefined: mantém como está
+    });
+    if (soWhatsApp && !algum) continue;
+    const alvo = nova.getRow(destino++);
+    copiarLinha(linha, alvo);
+    valores.forEach((v, i) => {
+      if (v !== undefined) alvo.getCell(colunas[i].numero).value = v;
+    });
+  }
+  return livro;
+}
+
+function copiarLinha(de, para) {
+  de.eachCell({ includeEmpty: false }, (celula, col) => {
+    const alvo = para.getCell(col);
+    alvo.value = celula.value;
+    alvo.style = celula.style;
+  });
+}
+
 function corrigirFormato(colunas, linhas) {
   for (const { linha, rs } of linhas) {
     rs.forEach((r, i) => {

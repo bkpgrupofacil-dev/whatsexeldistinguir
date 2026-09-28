@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { lerPlanilha, resumir, aplicarResultado } from './planilha.js';
+import { lerPlanilha, resumir, aplicarResultado, planilhaLimpa } from './planilha.js';
 import { ESTADOS } from './whatsapp.js';
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -109,6 +109,18 @@ export class Fila {
     const planilha = await lerPlanilha(path.join(this.pastaJobs, id, job.entrada), job.opcoes);
     aplicarResultado(planilha, this.cache.dados, job.opcoes);
     return { buffer: await planilha.livro.xlsx.writeBuffer(), nome: `${path.parse(job.nome).name}-resultado.xlsx` };
+  }
+
+  /**
+   * Planilha limpa no mesmo formato da enviada: telefones corrigidos e fixos apagados.
+   * soWhatsApp: só os telefones (e as linhas) com WhatsApp confirmado.
+   */
+  async limpa(id, { soWhatsApp = false } = {}) {
+    const job = this.obter(id);
+    const planilha = await lerPlanilha(path.join(this.pastaJobs, id, job.entrada), { ...job.opcoes, apagarFixos: true });
+    const livro = planilhaLimpa(planilha, this.cache.dados, { soWhatsApp });
+    const sufixo = soWhatsApp ? 'so-whatsapp' : 'limpa';
+    return { buffer: await livro.xlsx.writeBuffer(), nome: `${path.parse(job.nome).name}-${sufixo}.xlsx` };
   }
 
   pausar(id) {

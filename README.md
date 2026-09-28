@@ -69,6 +69,12 @@ Tudo fica no volume `dados` (montado em `/dados` no backend):
 
 A planilha pode ter **várias colunas de telefone** (ex.: `telefone1`, `telefone2`, `telefone3`...): o sistema acha sozinho todas as colunas cujo nome parece telefone (Telefone, Celular, WhatsApp, Fone...). Para escolher na mão, informe em **Opções** os nomes ou letras separados por vírgula (ex.: `D, E, F`).
 
+Há três downloads para cada planilha:
+
+- **Planilha limpa**: as mesmas colunas que você enviou (sem nada a mais), com os telefones corrigidos e os **fixos apagados**.
+- **Só com WhatsApp**: igual à limpa, mas só com os telefones que têm WhatsApp confirmado e só as linhas que ficaram com algum telefone.
+- **Baixar resultado**: a planilha completa da checagem, descrita abaixo.
+
 A planilha de resultado é a original com os **telefones corrigidos** (só dígitos, DDD + número, ex.: `(88) 99340-8437` vira `88993408437`; números juntos na mesma célula são separados para colunas de telefone vazias; os que não dá para corrigir, como sem DDD, ficam **em amarelo**) e colunas novas no fim:
 
 | Coluna | O que é |

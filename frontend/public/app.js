@@ -155,7 +155,9 @@ function renderJob(j) {
     <div class="tipos">${tipos}</div>
     ${j.erro ? `<p class="erro">${esc(j.erro)}</p>` : ''}
     <div class="botoes">
-      <a class="botao pequeno" href="/api/planilhas/${j.id}/resultado">Baixar resultado</a>
+      <a class="botao pequeno" href="/api/planilhas/${j.id}/resultado" title="Planilha com as colunas de resultado da checagem">Baixar resultado</a>
+      <a class="botao pequeno" href="/api/planilhas/${j.id}/limpa" title="Mesmas colunas que você enviou, telefones corrigidos e fixos apagados">Planilha limpa</a>
+      ${soTriagem ? '' : `<a class="botao pequeno" href="/api/planilhas/${j.id}/limpa?so=whatsapp" title="Só os telefones com WhatsApp confirmado (e só as linhas que têm algum)">Só com WhatsApp</a>`}
       ${podePausar ? `<button class="pequeno secundario" onclick="acao('${j.id}','pausar')">Pausar</button>` : ''}
       ${podeContinuar ? `<button class="pequeno secundario" onclick="acao('${j.id}','continuar')">${soTriagem ? 'Checar no WhatsApp' : 'Continuar'}</button>` : ''}
       <button class="pequeno perigo" onclick="excluir('${j.id}')">Excluir</button>
