@@ -17,6 +17,7 @@ Opções:
   --aba NOME        Aba da planilha. Padrão: a primeira
   --ddd XX          DDD para números que vieram sem DDD
   --so-triagem      Só faz a triagem pelo formato, sem conectar no WhatsApp
+  --ignorar-fixos   Não consulta telefones fixos no WhatsApp (só celulares)
   --intervalo S     Segundos entre cada consulta ao WhatsApp. Padrão: 5
   --limite N        Máximo de consultas nesta execução. Padrão: 200
   --saida ARQUIVO   Arquivo de resultado. Padrão: <nome>-resultado.xlsx
@@ -32,6 +33,7 @@ async function main() {
       aba: { type: 'string' },
       ddd: { type: 'string' },
       'so-triagem': { type: 'boolean', default: false },
+      'ignorar-fixos': { type: 'boolean', default: false },
       intervalo: { type: 'string', default: '5' },
       limite: { type: 'string', default: '200' },
       saida: { type: 'string' },
@@ -49,7 +51,7 @@ async function main() {
   const planilha = await lerPlanilha(arquivo, { coluna: op.coluna, aba: op.aba, ddd: op.ddd });
   console.log(`Colunas de telefone: ${planilha.nomeColuna}`);
 
-  const { porTipo, numeros } = resumir(planilha.linhas);
+  const { porTipo, numeros } = resumir(planilha.linhas, { ignorarFixos: op['ignorar-fixos'] });
   console.log('\nTriagem:');
   for (const [tipo, n] of Object.entries(porTipo)) console.log(`  ${tipo}: ${n}`);
 
@@ -58,7 +60,7 @@ async function main() {
     await checar(numeros, cache, { intervalo: Number(op.intervalo) * 1000, limite: Number(op.limite) });
   }
 
-  const { sim, nao } = aplicarResultado(planilha, cache.dados, { soTriagem: op['so-triagem'] });
+  const { sim, nao } = aplicarResultado(planilha, cache.dados, { soTriagem: op['so-triagem'], ignorarFixos: op['ignorar-fixos'] });
   if (!op['so-triagem']) console.log(`\nCom WhatsApp: ${sim} | Sem WhatsApp: ${nao}`);
 
   const saida = op.saida || path.join(path.dirname(arquivo), `${path.parse(arquivo).name}-resultado.xlsx`);

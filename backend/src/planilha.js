@@ -48,15 +48,20 @@ function separarNumerosJuntos(linha, colunas, ddd) {
   }
 }
 
+/** Um número entra na checagem? (com ignorarFixos, telefones fixos ficam de fora) */
+function vaiChecar(r, ignorarFixos) {
+  return podeChecar(r) && !(ignorarFixos && r.tipo === TIPOS.FIXO);
+}
+
 /** Contagem por tipo (ignorando células vazias) e lista de números (sem repetição) que dá para checar. */
-export function resumir(linhas) {
+export function resumir(linhas, { ignorarFixos = false } = {}) {
   const porTipo = {};
   const numeros = new Set();
   for (const { rs } of linhas) {
     for (const r of rs) {
       if (r.tipo === TIPOS.VAZIO) continue;
       porTipo[r.tipo] = (porTipo[r.tipo] || 0) + 1;
-      if (podeChecar(r)) numeros.add(r.numero);
+      if (vaiChecar(r, ignorarFixos)) numeros.add(r.numero);
     }
   }
   return { total: linhas.length, porTipo, numeros: [...numeros] };
@@ -73,8 +78,9 @@ const COR_CORRIGIR = 'FFFFFF00';
  *  - para cada coluna de telefone: "<coluna> - tipo" e "<coluna> - WhatsApp"
  *  - "Números com WhatsApp" (todos os da linha que têm) e "Tem WhatsApp?" (resumo da linha)
  * respostas: { '5511987654321': 'Sim' | 'Não' }. Com soTriagem, nada aparece como checado.
+ * Com ignorarFixos, telefones fixos aparecem como "Não checado (fixo)".
  */
-export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soTriagem = false } = {}) {
+export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soTriagem = false, ignorarFixos = false } = {}) {
   corrigirFormato(colunas, linhas);
   const base = aba.columnCount;
   const cabecalhos = [];
@@ -92,6 +98,7 @@ export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soT
     const comWhats = [];
     let checaveis = 0;
     let checados = 0;
+    let fixosIgnorados = 0;
     rs.forEach((r, i) => {
       const cTipo = linha.getCell(base + 1 + i * 2);
       const cWhats = linha.getCell(base + 2 + i * 2);
@@ -99,6 +106,11 @@ export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soT
       cTipo.value = r.tipo === TIPOS.INVALIDO || r.tipo === TIPOS.SEM_DDD ? `${r.tipo} (${r.motivo})` : r.tipo;
       if (!podeChecar(r)) {
         cWhats.value = 'Não';
+        return;
+      }
+      if (!vaiChecar(r, ignorarFixos)) {
+        cWhats.value = 'Não checado (fixo)';
+        fixosIgnorados++;
         return;
       }
       checaveis++;
@@ -111,6 +123,7 @@ export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soT
 
     let resumo;
     if (comWhats.length) resumo = 'Sim';
+    else if (!checaveis && fixosIgnorados) resumo = 'Só telefone fixo';
     else if (!checaveis) resumo = 'Sem número válido';
     else if (checados === checaveis) resumo = 'Não';
     else resumo = 'Não checado';

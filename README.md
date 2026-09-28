@@ -65,7 +65,7 @@ Tudo fica no volume `dados` (montado em `/dados` no backend):
 
 - **Conexão**: mostra o QR Code, o número conectado e quantas consultas foram feitas hoje.
 - **Checar um número**: consulta um número avulso na hora.
-- **Enviar planilha**: a triagem sai na hora; a checagem entra numa fila e vai sendo feita aos poucos, respeitando o intervalo e o limite diário. Dá para pausar, continuar e **baixar o resultado a qualquer momento** (com o que já foi checado).
+- **Enviar planilha**: a opção **"Não checar telefones fixos"** vem marcada: fixos quase nunca têm WhatsApp, então não gastam consulta (continuam na planilha, com o formato corrigido, marcados como "Não checado (fixo)"). A triagem sai na hora; a checagem entra numa fila e vai sendo feita aos poucos, respeitando o intervalo e o limite diário. Dá para pausar, continuar e **baixar o resultado a qualquer momento** (com o que já foi checado).
 
 A planilha pode ter **várias colunas de telefone** (ex.: `telefone1`, `telefone2`, `telefone3`...): o sistema acha sozinho todas as colunas cujo nome parece telefone (Telefone, Celular, WhatsApp, Fone...). Para escolher na mão, informe em **Opções** os nomes ou letras separados por vírgula (ex.: `D, E, F`).
 
