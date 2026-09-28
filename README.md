@@ -1,39 +1,73 @@
 # whatsexeldistinguir
 
-Lê uma planilha (Excel `.xlsx` ou `.csv`) com telefones e separa quem tem WhatsApp de quem não tem.
+Painel web que lê uma planilha (Excel `.xlsx` ou `.csv`) com telefones e separa quem tem WhatsApp de quem não tem.
+
+![Tela do painel](docs/tela.png)
 
 Faz duas coisas:
 
-1. **Triagem pelo formato** (sem internet, sem risco): diz se o número é celular, fixo, sem DDD, inválido, de serviço (0800) ou de outro país.
-2. **Checagem real**: conecta no seu WhatsApp (QR Code, como o WhatsApp Web) e pergunta, número por número, se ele está cadastrado.
+1. **Triagem pelo formato** (sem risco): diz se o número é celular, fixo, sem DDD, inválido, de serviço (0800) ou de outro país.
+2. **Checagem real**: conecta um WhatsApp pelo QR Code (como o WhatsApp Web) e pergunta, número por número, se ele está cadastrado.
 
-> ⚠️ **Atenção:** a checagem real usa uma biblioteca **não oficial** (Baileys). Isso vai contra os termos de uso do WhatsApp e **o número conectado pode ser banido**, principalmente se você checar muitos números de uma vez. Use um chip secundário, não o seu número principal.
+> ⚠️ **Atenção:** a checagem real usa uma biblioteca **não oficial** (Baileys). Isso vai contra os termos de uso do WhatsApp e **o número conectado pode ser banido**, principalmente com muitas consultas. Use um chip secundário, não o seu número principal.
 
-## Instalação
+## Estrutura
 
-Precisa do [Node.js](https://nodejs.org) 20 ou mais novo.
+| Pasta | O que é |
+|---|---|
+| `backend/` | API em Node.js: triagem, fila de planilhas, conexão com o WhatsApp. Guarda tudo no volume `/dados` |
+| `frontend/` | Painel (HTML/JS) servido pelo nginx, que também repassa `/api` para o backend e pede usuário/senha |
+| `docker-compose.yml` | Stack para o Portainer (build a partir do repositório) |
+| `docker-compose.imagens.yml` | Stack para o Portainer usando as imagens prontas do GHCR |
 
-```bash
-npm install
-```
+## Subir no Portainer
 
-## Como usar
+As imagens são publicadas automaticamente no GitHub Container Registry (`ghcr.io/bkpgrupofacil-dev/whatsexeldistinguir-backend` e `-frontend`) a cada push na branch `main`.
 
-Só a triagem (rápido, sem conectar no WhatsApp):
+**Opção A: pelo repositório (o Portainer faz o build)**
 
-```bash
-node src/index.js contatos.xlsx --so-triagem
-```
+1. Portainer › **Stacks** › **Add stack** › **Repository**.
+2. Repository URL: `https://github.com/bkpgrupofacil-dev/whatsexeldistinguir`. Como o repositório é privado, ligue **Authentication** e use seu usuário do GitHub com um *personal access token* (permissão de leitura do repositório).
+3. Compose path: `docker-compose.yml`.
+4. Em **Environment variables**, adicione pelo menos `APP_SENHA` (veja a tabela abaixo).
+5. **Deploy the stack**.
 
-Triagem + checagem real:
+**Opção B: Web editor (usa as imagens prontas do GHCR)**
 
-```bash
-node src/index.js contatos.xlsx
-```
+1. Portainer › **Registries** › **Add registry** › **Custom registry**: URL `ghcr.io`, usuário do GitHub e um token com permissão `read:packages` (as imagens de repositório privado também são privadas).
+2. **Stacks** › **Add stack** › **Web editor**: cole o conteúdo de `docker-compose.imagens.yml`.
+3. Adicione as variáveis de ambiente e faça o deploy.
 
-Na primeira vez aparece um QR Code no terminal. No celular: **WhatsApp > Aparelhos conectados > Conectar um aparelho** e leia o código. O login fica salvo na pasta `.login-whatsapp/`.
+Depois, abra `http://SEU-SERVIDOR:8080`, entre com o usuário e a senha, clique em **Conectar** e leia o QR Code com o celular.
 
-O resultado sai em `contatos-resultado.xlsx`, com a planilha original e 5 colunas novas:
+### Variáveis de ambiente
+
+| Variável | Padrão | Para quê |
+|---|---|---|
+| `APP_SENHA` | (obrigatória) | Senha para abrir o painel |
+| `APP_USUARIO` | `admin` | Usuário para abrir o painel |
+| `PORTA` | `8080` | Porta do painel no servidor |
+| `INTERVALO_SEGUNDOS` | `5` | Segundos entre cada consulta ao WhatsApp (com variação de ±30%) |
+| `LIMITE_DIARIO` | `300` | Máximo de consultas por dia. Ao atingir, a fila para e continua sozinha no dia seguinte |
+
+Se você usa proxy reverso (Traefik, Nginx Proxy Manager), aponte para o serviço `frontend`, porta 80, e pode remover o `ports:`.
+
+### Dados
+
+Tudo fica no volume `dados` (montado em `/dados` no backend):
+
+- `login-whatsapp/`: sessão do WhatsApp (não precisa ler o QR Code de novo após reiniciar)
+- `cache-checagem.json`: respostas já obtidas; um número nunca é consultado duas vezes
+- `planilhas/`: planilhas enviadas e o andamento de cada uma
+- `uso.json`: quantas consultas foram feitas hoje
+
+## Como funciona o painel
+
+- **Conexão**: mostra o QR Code, o número conectado e quantas consultas foram feitas hoje.
+- **Checar um número**: consulta um número avulso na hora.
+- **Enviar planilha**: a triagem sai na hora; a checagem entra numa fila e vai sendo feita aos poucos, respeitando o intervalo e o limite diário. Dá para pausar, continuar e **baixar o resultado a qualquer momento** (com o que já foi checado).
+
+A planilha de resultado é a original com 5 colunas novas:
 
 | Coluna | O que é |
 |---|---|
@@ -43,25 +77,21 @@ O resultado sai em `contatos-resultado.xlsx`, com a planilha original e 5 coluna
 | WhatsApp pelo formato | Palpite: Provável / Improvável / Não |
 | Tem WhatsApp? (checado) | **Sim** (verde) / **Não** (vermelho), resposta do próprio WhatsApp |
 
-### Opções
-
-| Opção | Para quê |
-|---|---|
-| `--coluna Telefone` | Nome ou letra (ex.: `C`) da coluna dos telefones. Sem isso, o programa procura sozinho |
-| `--aba "Plan1"` | Qual aba ler (padrão: a primeira) |
-| `--ddd 11` | DDD para números que vieram sem DDD |
-| `--intervalo 5` | Segundos entre cada consulta (padrão 5, com variação aleatória) |
-| `--limite 200` | Máximo de consultas por execução (padrão 200) |
-| `--saida arquivo.xlsx` | Nome do arquivo de resultado |
-
-### Listas grandes
-
-As respostas ficam guardadas em `cache-checagem.json`. Se a lista tiver mais números que o `--limite`, rode o mesmo comando de novo mais tarde: ele continua de onde parou e não consulta de novo o que já foi checado. Números repetidos são consultados uma vez só.
-
-Para diminuir o risco de banimento: mantenha o intervalo alto (5 s ou mais), não passe de algumas centenas por dia e use um número que já tenha algum tempo de uso.
-
-## Testes
+## Uso sem Docker (linha de comando)
 
 ```bash
-npm test
+cd backend
+npm install
+node src/cli.js contatos.xlsx --so-triagem   # só triagem
+node src/cli.js contatos.xlsx                # triagem + checagem (mostra o QR Code no terminal)
+node src/cli.js --ajuda                      # todas as opções
 ```
+
+## Desenvolvimento
+
+```bash
+cd backend && npm install && npm test   # testes
+npm start                               # API em http://localhost:3000 (dados em ./dados)
+```
+
+Para rodar a stack completa localmente: `APP_SENHA=teste docker compose up --build`.

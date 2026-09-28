@@ -2,3 +2,5 @@ node_modules/
 .login-whatsapp/
 cache-checagem.json
 *-resultado.xlsx
+dados/
+.env

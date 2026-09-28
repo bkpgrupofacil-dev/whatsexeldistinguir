@@ -1,0 +1,28 @@
+# Stack para o Portainer usando as imagens prontas do GHCR: Stacks > Add stack > Web editor (cole este arquivo).
+services:
+  backend:
+    image: ghcr.io/bkpgrupofacil-dev/whatsexeldistinguir-backend:latest
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+      # segundos entre cada consulta ao WhatsApp (com variação de ±30%)
+      INTERVALO_SEGUNDOS: ${INTERVALO_SEGUNDOS:-5}
+      # máximo de consultas por dia; quando atinge, a fila continua no dia seguinte
+      LIMITE_DIARIO: ${LIMITE_DIARIO:-300}
+    volumes:
+      - dados:/dados
+
+  frontend:
+    image: ghcr.io/bkpgrupofacil-dev/whatsexeldistinguir-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      # usuário e senha para abrir o painel no navegador (deixe vazio para sem senha)
+      APP_USUARIO: ${APP_USUARIO:-admin}
+      APP_SENHA: ${APP_SENHA:?defina APP_SENHA nas variáveis de ambiente da stack}
+    ports:
+      - "${PORTA:-8080}:80"
+
+volumes:
+  dados:

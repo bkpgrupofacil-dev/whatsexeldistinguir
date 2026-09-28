@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WhatsApp Distinguir</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%2325d366'/><path d='M10 17l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header>
+    <h1>WhatsApp Distinguir</h1>
+    <p>Descubra quais números da sua planilha têm WhatsApp</p>
+  </header>
+
+  <main>
+    <section class="cartao" id="cartao-whatsapp">
+      <h2>1. Conexão com o WhatsApp</h2>
+      <div class="linha">
+        <span id="wa-estado" class="selo">…</span>
+        <span id="wa-numero" class="discreto"></span>
+      </div>
+      <p id="wa-erro" class="erro" hidden></p>
+      <div id="wa-qr" hidden>
+        <p>No celular: <b>WhatsApp › Aparelhos conectados › Conectar um aparelho</b> e leia o código:</p>
+        <img id="wa-qr-img" alt="QR Code para conectar o WhatsApp">
+      </div>
+      <div class="botoes">
+        <button id="bt-conectar">Conectar</button>
+        <button id="bt-sair" class="secundario" hidden>Desconectar</button>
+      </div>
+      <p class="aviso">⚠️ A checagem usa uma ferramenta não oficial e o número conectado pode ser banido pelo WhatsApp. Use um chip secundário.</p>
+      <p id="uso" class="discreto"></p>
+      <p id="situacao" class="discreto"></p>
+    </section>
+
+    <section class="cartao">
+      <h2>2. Checar um número</h2>
+      <form id="form-numero" class="linha">
+        <input id="numero" placeholder="(11) 98765-4321" required>
+        <button>Checar</button>
+      </form>
+      <div id="resultado-numero"></div>
+    </section>
+
+    <section class="cartao">
+      <h2>3. Enviar planilha</h2>
+      <form id="form-planilha">
+        <label class="arquivo">
+          <input type="file" id="arquivo" accept=".xlsx,.csv" required>
+          <span id="arquivo-nome">Escolher arquivo .xlsx ou .csv</span>
+        </label>
+        <details>
+          <summary>Opções</summary>
+          <div class="grade">
+            <label>Coluna dos telefones <input name="coluna" placeholder="detecta sozinho (ou ex.: Telefone, C)"></label>
+            <label>Aba <input name="aba" placeholder="a primeira"></label>
+            <label>DDD para números sem DDD <input name="ddd" maxlength="2" inputmode="numeric" placeholder="ex.: 11"></label>
+          </div>
+          <label class="check"><input type="checkbox" name="soTriagem"> Só triagem pelo formato (não consulta o WhatsApp)</label>
+        </details>
+        <button id="bt-enviar">Enviar</button>
+        <p id="envio-erro" class="erro" hidden></p>
+      </form>
+    </section>
+
+    <section class="cartao">
+      <h2>Planilhas</h2>
+      <div id="lista"><p class="discreto">Nenhuma planilha enviada ainda.</p></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+:root {
+  --fundo: #f3f5f4;
+  --cartao: #ffffff;
+  --texto: #1b2420;
+  --discreto: #5d6b65;
+  --borda: #dde3e0;
+  --verde: #1f9d55;
+  --verde-claro: #d9f5e3;
+  --vermelho: #c53030;
+  --vermelho-claro: #fde2e2;
+  --amarelo-claro: #fff4d6;
+  --cinza-claro: #eceff1;
+  --primaria: #128c7e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #111614;
+    --cartao: #1a211e;
+    --texto: #e6ece9;
+    --discreto: #97a59f;
+    --borda: #2c3632;
+    --verde: #4ade80;
+    --verde-claro: #173b26;
+    --vermelho: #f87171;
+    --vermelho-claro: #45201f;
+    --amarelo-claro: #3d3316;
+    --cinza-claro: #262e2b;
+    --primaria: #25b39f;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fundo);
+  color: var(--texto);
+}
+header { padding: 28px 16px 8px; max-width: 860px; margin: 0 auto; }
+header h1 { margin: 0; font-size: 26px; }
+header p { margin: 4px 0 0; color: var(--discreto); }
+main { max-width: 860px; margin: 0 auto; padding: 8px 16px 48px; display: grid; gap: 16px; }
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; padding: 18px 20px; }
+.cartao h2 { margin: 0 0 12px; font-size: 17px; }
+.linha { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.botoes { display: flex; gap: 8px; margin-top: 12px; }
+.discreto { color: var(--discreto); font-size: 14px; margin: 6px 0 0; }
+.erro { color: var(--vermelho); margin: 8px 0 0; }
+.aviso { font-size: 13px; color: var(--discreto); background: var(--amarelo-claro); padding: 8px 10px; border-radius: 8px; margin: 14px 0 0; }
+
+button, a.botao {
+  font: inherit; text-decoration: none; display: inline-block; font-weight: 600; cursor: pointer;
+  background: var(--primaria); color: #fff; border: 0; border-radius: 8px; padding: 8px 16px;
+}
+button:disabled { opacity: .5; cursor: default; }
+button.secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+button.perigo { background: transparent; color: var(--vermelho); border: 1px solid var(--borda); }
+button.pequeno, a.pequeno { padding: 4px 10px; font-size: 13px; }
+
+input:not([type=checkbox]):not([type=file]) {
+  font: inherit; color: inherit; background: var(--fundo);
+  border: 1px solid var(--borda); border-radius: 8px; padding: 8px 10px; width: 100%;
+}
+#form-numero input { flex: 1; min-width: 180px; width: auto; }
+.grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0; }
+.grade label { font-size: 13px; color: var(--discreto); display: grid; gap: 4px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+details { margin: 12px 0; }
+summary { cursor: pointer; color: var(--discreto); }
+
+.arquivo {
+  display: block; border: 2px dashed var(--borda); border-radius: 10px; padding: 18px;
+  text-align: center; cursor: pointer; color: var(--discreto);
+}
+.arquivo:hover { border-color: var(--primaria); }
+.arquivo input { display: none; }
+
+.selo { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--cinza-claro); }
+.selo.ok { background: var(--verde-claro); color: var(--verde); }
+.selo.ruim { background: var(--vermelho-claro); color: var(--vermelho); }
+.selo.espera { background: var(--amarelo-claro); }
+
+#wa-qr img { width: 260px; max-width: 100%; background: #fff; padding: 8px; border-radius: 8px; }
+
+#resultado-numero { margin-top: 12px; }
+.resposta { padding: 10px 12px; border-radius: 8px; background: var(--cinza-claro); }
+.resposta.sim { background: var(--verde-claro); }
+.resposta.nao { background: var(--vermelho-claro); }
+
+.job { border-top: 1px solid var(--borda); padding: 14px 0; }
+.job:first-child { border-top: 0; padding-top: 0; }
+.job-topo { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.job-nome { font-weight: 600; word-break: break-all; }
+.barra { height: 8px; background: var(--cinza-claro); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
+.barra div { height: 100%; background: var(--primaria); transition: width .4s; }
+.numeros { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; }
+.numeros b.sim { color: var(--verde); }
+.numeros b.nao { color: var(--vermelho); }
+.tipos { font-size: 13px; color: var(--discreto); margin-top: 4px; }
+.job .botoes { margin-top: 8px; flex-wrap: wrap; }

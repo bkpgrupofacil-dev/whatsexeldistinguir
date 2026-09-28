@@ -4,7 +4,8 @@
   "description": "Separa números de telefone de uma planilha entre os que têm e os que não têm WhatsApp",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "start": "node src/index.js"
+    "start": "node src/server.js",
+    "cli": "node src/cli.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,11 @@
   "dependencies": {
     "baileys": "^7.0.0-rc14",
     "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "multer": "^2.4.0",
     "pino": "^10.3.1",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0"
-  }
+  },
+  "main": "src/server.js"
 }

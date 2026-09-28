@@ -1,0 +1,32 @@
+# Stack para o Portainer: Stacks > Add stack > Repository (o Portainer faz o build a partir deste repositório).
+services:
+  backend:
+    build: ./backend
+    image: whatsexeldistinguir-backend:local
+    pull_policy: build
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+      # segundos entre cada consulta ao WhatsApp (com variação de ±30%)
+      INTERVALO_SEGUNDOS: ${INTERVALO_SEGUNDOS:-5}
+      # máximo de consultas por dia; quando atinge, a fila continua no dia seguinte
+      LIMITE_DIARIO: ${LIMITE_DIARIO:-300}
+    volumes:
+      - dados:/dados
+
+  frontend:
+    build: ./frontend
+    image: whatsexeldistinguir-frontend:local
+    pull_policy: build
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      # usuário e senha para abrir o painel no navegador (deixe vazio para sem senha)
+      APP_USUARIO: ${APP_USUARIO:-admin}
+      APP_SENHA: ${APP_SENHA:?defina APP_SENHA nas variáveis de ambiente da stack}
+    ports:
+      - "${PORTA:-8080}:80"
+
+volumes:
+  dados:
