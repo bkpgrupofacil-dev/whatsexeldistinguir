@@ -25,9 +25,27 @@ export async function lerPlanilha(arquivo, { coluna, aba: nomeAba, ddd, csv } = 
   const linhas = [];
   for (let i = 2; i <= aba.rowCount; i++) {
     const linha = aba.getRow(i);
+    separarNumerosJuntos(linha, colunas, ddd);
     linhas.push({ linha, rs: colunas.map((c) => triar(textoCelula(linha.getCell(c.numero)), { dddPadrao: ddd })) });
   }
   return { livro, aba, colunas, nomeColuna: colunas.map((c) => c.nome).join(', '), linhas };
+}
+
+/**
+ * Célula com dois números juntos (ex.: "85991430774  85988887777" ou "(85) 9999-1111 / 3222-3333"):
+ * deixa o primeiro na célula e move os outros para colunas de telefone vazias da mesma linha.
+ */
+function separarNumerosJuntos(linha, colunas, ddd) {
+  for (const c of colunas) {
+    const texto = textoCelula(linha.getCell(c.numero));
+    if (texto.replace(/\D/g, '').length < 16) continue;
+    const partes = texto.split(/\s*(?:[\/;|,]|\be\b|\s{2,}|\t)\s*/).map((p) => p.trim()).filter(Boolean);
+    if (partes.length < 2 || !partes.every((p) => triar(p, { dddPadrao: ddd }).numero)) continue;
+    const vazias = colunas.filter((o) => !textoCelula(linha.getCell(o.numero)).trim());
+    if (vazias.length < partes.length - 1) continue;
+    linha.getCell(c.numero).value = partes[0];
+    partes.slice(1).forEach((p, k) => (linha.getCell(vazias[k].numero).value = p));
+  }
 }
 
 /** Contagem por tipo (ignorando células vazias) e lista de números (sem repetição) que dá para checar. */
@@ -46,14 +64,18 @@ export function resumir(linhas) {
 
 const COR_SIM = 'FFC6EFCE';
 const COR_NAO = 'FFFFC7CE';
+const COR_CORRIGIR = 'FFFFFF00';
 
 /**
- * Acrescenta as colunas de resultado no fim da planilha:
+ * Corrige o formato dos telefones nas colunas originais (só dígitos, DDD + número, ex.: 85999998888;
+ * os que não dá para corrigir, como sem DDD ou inválidos, ficam pintados de amarelo)
+ * e acrescenta as colunas de resultado no fim da planilha:
  *  - para cada coluna de telefone: "<coluna> - tipo" e "<coluna> - WhatsApp"
  *  - "Números com WhatsApp" (todos os da linha que têm) e "Tem WhatsApp?" (resumo da linha)
  * respostas: { '5511987654321': 'Sim' | 'Não' }. Com soTriagem, nada aparece como checado.
  */
 export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soTriagem = false } = {}) {
+  corrigirFormato(colunas, linhas);
   const base = aba.columnCount;
   const cabecalhos = [];
   for (const c of colunas) cabecalhos.push(`${c.nome} - tipo`, `${c.nome} - WhatsApp`);
@@ -101,6 +123,19 @@ export function aplicarResultado({ aba, colunas, linhas }, respostas = {}, { soT
     pintar(cResumo, resumo);
   }
   return { sim, nao };
+}
+
+function corrigirFormato(colunas, linhas) {
+  for (const { linha, rs } of linhas) {
+    rs.forEach((r, i) => {
+      const celula = linha.getCell(colunas[i].numero);
+      if (r.tipo === TIPOS.CELULAR || r.tipo === TIPOS.FIXO) {
+        celula.value = r.numero.slice(2); // tira o 55
+      } else if (r.tipo === TIPOS.INVALIDO || r.tipo === TIPOS.SEM_DDD) {
+        celula.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COR_CORRIGIR } };
+      }
+    });
+  }
 }
 
 function pintar(celula, valor) {

@@ -87,3 +87,29 @@ test('lê várias colunas de telefone e resume a linha', async () => {
   assert.equal(v(4, 10), 'Sem número válido');
   assert.match(v(4, 5), /Inválido/);
 });
+
+test('corrige o formato dos telefones e separa números juntos', async () => {
+  const ExcelJS = (await import('exceljs')).default;
+  const { lerPlanilha, aplicarResultado } = await import('../src/planilha.js');
+  const w = new ExcelJS.Workbook();
+  const s = w.addWorksheet('x');
+  s.addRow(['nome', 'telefone1', 'telefone2']);
+  s.addRow(['A', '88) 99340-8437', '']);
+  s.addRow(['B', ' (85) 3456-7890 ', '85991430774  85988887777']);
+  s.addRow(['C', '85991430774  85988887777', '']);
+  s.addRow(['D', '991217000', ' n']);
+  const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'pl-')), 'p.xlsx');
+  await w.xlsx.writeFile(arq);
+
+  const p = await lerPlanilha(arq);
+  aplicarResultado(p, {}, { soTriagem: true });
+  const v = (l, c) => p.aba.getRow(l).getCell(c).value;
+  assert.equal(v(2, 2), '88993408437');
+  assert.equal(v(3, 2), '8534567890');
+  assert.equal(v(3, 3), '85991430774  85988887777'); // sem coluna vazia para separar: fica marcado
+  assert.equal(p.aba.getRow(3).getCell(3).fill?.fgColor?.argb, 'FFFFFF00');
+  assert.equal(v(4, 2), '85991430774');
+  assert.equal(v(4, 3), '85988887777');
+  assert.equal(v(5, 2), '991217000'); // sem DDD: não dá para corrigir
+  assert.equal(p.aba.getRow(5).getCell(2).fill?.fgColor?.argb, 'FFFFFF00');
+});
