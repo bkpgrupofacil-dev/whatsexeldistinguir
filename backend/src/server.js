@@ -85,11 +85,15 @@ app.post('/api/planilhas', upload.single('arquivo'), rota(async (req, res) => {
   res.status(201).json(job);
 }));
 
-app.get('/api/planilhas/:id/resultado', rota(async (req, res) => {
-  const { buffer, nome } = await fila.resultado(req.params.id);
+function enviarPlanilha(res, { buffer, nome }) {
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', `attachment; filename="resultado.xlsx"; filename*=UTF-8''${encodeURIComponent(nome)}`);
+  res.setHeader('Content-Disposition', `attachment; filename="planilha.xlsx"; filename*=UTF-8''${encodeURIComponent(nome)}`);
   res.send(Buffer.from(buffer));
+}
+
+app.get('/api/planilhas/:id/resultado', rota(async (req, res) => enviarPlanilha(res, await fila.resultado(req.params.id))));
+app.get('/api/planilhas/:id/limpa', rota(async (req, res) => {
+  enviarPlanilha(res, await fila.limpa(req.params.id, { soWhatsApp: req.query.so === 'whatsapp' }));
 }));
 
 app.post('/api/planilhas/:id/pausar', (req, res) => res.json(fila.pausar(req.params.id)));

@@ -147,3 +147,30 @@ test('apagarFixos tira os fixos da planilha', async () => {
   assert.equal(loja.getCell(2).value, null);
   assert.equal(loja.getCell(a.columnCount).value, 'Sem número válido');
 });
+
+test('planilha limpa mantém o formato original e apaga os fixos', async () => {
+  const { fila } = montar();
+  const job = await fila.criar({ buffer: exemplo, nome: 'e.xlsx', opcoes: {} });
+  fila.rodar();
+  await ate(() => fila.obter(job.id).status === STATUS.CONCLUIDO);
+  fila.parar();
+  const ExcelJS = (await import('exceljs')).default;
+  const ler = async (r) => {
+    const w = new ExcelJS.Workbook();
+    await w.xlsx.load(r.buffer);
+    return w.worksheets[0];
+  };
+  const linhas = (a) => [...Array(a.rowCount).keys()].map((i) => [1, 2, 3].map((c) => a.getRow(i + 1).getCell(c).value ?? undefined));
+
+  const limpa = await ler(await fila.limpa(job.id));
+  assert.equal(limpa.columnCount, 3); // Nome, Telefone, Cidade
+  const l = linhas(limpa);
+  assert.deepEqual(l[0], ['Nome', 'Telefone', 'Cidade']);
+  assert.deepEqual(l[1], ['Ana', '11987654321', 'SP']);
+  assert.deepEqual(l.find((r) => r[0] === 'Loja'), ['Loja', undefined, 'SP']);
+  assert.equal(l.length, 8);
+
+  // na fila de teste, só números 5511... têm WhatsApp
+  const so = await ler(await fila.limpa(job.id, { soWhatsApp: true }));
+  assert.deepEqual(linhas(so), [['Nome', 'Telefone', 'Cidade'], ['Ana', '11987654321', 'SP']]);
+});
