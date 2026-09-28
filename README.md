@@ -38,7 +38,7 @@ As imagens são publicadas automaticamente no GitHub Container Registry (`ghcr.i
 2. **Stacks** › **Add stack** › **Web editor**: cole o conteúdo de `docker-compose.imagens.yml`.
 3. Adicione as variáveis de ambiente e faça o deploy.
 
-Depois, abra `http://SEU-SERVIDOR:8080`, entre com o usuário e a senha, clique em **Conectar** e leia o QR Code com o celular.
+Depois, abra `http://SEU-SERVIDOR:8787`, entre com o usuário e a senha, clique em **Conectar** e leia o QR Code com o celular.
 
 ### Variáveis de ambiente
 
@@ -46,7 +46,7 @@ Depois, abra `http://SEU-SERVIDOR:8080`, entre com o usuário e a senha, clique 
 |---|---|---|
 | `APP_SENHA` | (obrigatória) | Senha para abrir o painel |
 | `APP_USUARIO` | `admin` | Usuário para abrir o painel |
-| `PORTA` | `8080` | Porta do painel no servidor |
+| `PORTA` | `8787` | Porta do painel no servidor (troque se já estiver em uso) |
 | `INTERVALO_SEGUNDOS` | `5` | Segundos entre cada consulta ao WhatsApp (com variação de ±30%) |
 | `LIMITE_DIARIO` | `300` | Máximo de consultas por dia. Ao atingir, a fila para e continua sozinha no dia seguinte |
 
@@ -67,15 +67,16 @@ Tudo fica no volume `dados` (montado em `/dados` no backend):
 - **Checar um número**: consulta um número avulso na hora.
 - **Enviar planilha**: a triagem sai na hora; a checagem entra numa fila e vai sendo feita aos poucos, respeitando o intervalo e o limite diário. Dá para pausar, continuar e **baixar o resultado a qualquer momento** (com o que já foi checado).
 
-A planilha de resultado é a original com 5 colunas novas:
+A planilha pode ter **várias colunas de telefone** (ex.: `telefone1`, `telefone2`, `telefone3`...): o sistema acha sozinho todas as colunas cujo nome parece telefone (Telefone, Celular, WhatsApp, Fone...). Para escolher na mão, informe em **Opções** os nomes ou letras separados por vírgula (ex.: `D, E, F`).
+
+A planilha de resultado é a original com colunas novas no fim:
 
 | Coluna | O que é |
 |---|---|
-| Número normalizado | Ex.: `5511987654321` |
-| Tipo | Celular, Fixo, Sem DDD, Inválido, Serviço, Internacional |
-| Observação | Motivo (ex.: "DDD 20 não existe", "Celular antigo, 9 acrescentado") |
-| WhatsApp pelo formato | Palpite: Provável / Improvável / Não |
-| Tem WhatsApp? (checado) | **Sim** (verde) / **Não** (vermelho), resposta do próprio WhatsApp |
+| `<coluna> - tipo` | Para cada coluna de telefone: Celular, Fixo, Sem DDD, Inválido (com o motivo)... |
+| `<coluna> - WhatsApp` | Para cada coluna de telefone: **Sim** (verde) / **Não** (vermelho) / Não checado |
+| Números com WhatsApp | Os números da linha que têm WhatsApp, já no formato `5585999999999` |
+| Tem WhatsApp? | Resumo da linha: **Sim** se algum número tem, **Não** se nenhum tem, ou "Sem número válido" |
 
 ## Uso sem Docker (linha de comando)
 

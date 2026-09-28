@@ -58,3 +58,32 @@ test('recusa formato errado', async () => {
   const { fila } = montar();
   await assert.rejects(fila.criar({ buffer: Buffer.from('x'), nome: 'a.xls', opcoes: {} }), /xlsx/);
 });
+
+test('lê várias colunas de telefone e resume a linha', async () => {
+  const ExcelJS = (await import('exceljs')).default;
+  const { lerPlanilha, aplicarResultado, resumir } = await import('../src/planilha.js');
+  const w = new ExcelJS.Workbook();
+  const s = w.addWorksheet('x');
+  s.addRow(['nome', 'telefone1', 'telefone2', 'cidade']);
+  s.addRow(['A', '', '(85) 99290-3001', 'Fortaleza']);
+  s.addRow(['B', '85988414090', '8530828957', 'Fortaleza']);
+  s.addRow(['C', '123', '', 'Fortaleza']);
+  const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'pl-')), 'p.xlsx');
+  await w.xlsx.writeFile(arq);
+
+  const p = await lerPlanilha(arq);
+  assert.equal(p.nomeColuna, 'telefone1, telefone2');
+  const { numeros, porTipo } = resumir(p.linhas);
+  assert.deepEqual(numeros.sort(), ['558530828957', '5585988414090', '5585992903001']);
+  assert.deepEqual(porTipo, { Celular: 2, Fixo: 1, 'Inválido': 1 });
+
+  aplicarResultado(p, { '5585992903001': 'Sim', '5585988414090': 'Não', '558530828957': 'Não' });
+  const v = (l, c) => p.aba.getRow(l).getCell(c).value;
+  // colunas novas começam na 5: t1 tipo, t1 whats, t2 tipo, t2 whats, números, resumo
+  assert.equal(v(1, 10), 'Tem WhatsApp?');
+  assert.equal(v(2, 9), '5585992903001');
+  assert.equal(v(2, 10), 'Sim');
+  assert.equal(v(3, 10), 'Não');
+  assert.equal(v(4, 10), 'Sem número válido');
+  assert.match(v(4, 5), /Inválido/);
+});

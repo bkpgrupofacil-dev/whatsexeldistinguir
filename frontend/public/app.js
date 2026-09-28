@@ -143,12 +143,12 @@ function renderJob(j) {
       <span class="job-nome">${esc(j.nome)}</span>
       <span class="selo ${j.status === 'concluido' ? 'ok' : j.status === 'pausado' ? 'ruim' : 'espera'}">${soTriagem ? 'Só triagem' : NOMES_STATUS[j.status]}</span>
     </div>
-    <div class="discreto">${quando} · coluna "${esc(j.coluna)}" · ${j.total} linhas</div>
+    <div class="discreto">${quando} · telefones: ${esc(j.coluna)} · ${j.total} linhas</div>
     ${soTriagem ? '' : `<div class="barra"><div style="width:${pct}%"></div></div>`}
     <div class="numeros">
-      ${soTriagem ? '' : `<span>Checados: ${p.checados} de ${p.aChecar} (${pct}%)</span>
-      <span><b class="sim">${p.sim}</b> com WhatsApp</span>
-      <span><b class="nao">${p.nao}</b> sem WhatsApp</span>`}
+      ${soTriagem ? '' : `<span>Números checados: ${p.checados} de ${p.aChecar} (${pct}%)</span>
+      <span><b class="sim">${p.sim}</b> números com WhatsApp</span>
+      <span><b class="nao">${p.nao}</b> sem</span>`}
     </div>
     <div class="tipos">${tipos}</div>
     ${j.erro ? `<p class="erro">${esc(j.erro)}</p>` : ''}

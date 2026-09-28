@@ -13,7 +13,7 @@ const AJUDA = `
 Uso: node src/cli.js <planilha.xlsx|.csv> [opções]
 
 Opções:
-  --coluna NOME     Nome (ou letra, ex.: C) da coluna com os telefones. Padrão: detecta sozinho
+  --coluna NOMES    Nomes ou letras das colunas de telefone, separados por vírgula (ex.: "C,D"). Padrão: detecta sozinho
   --aba NOME        Aba da planilha. Padrão: a primeira
   --ddd XX          DDD para números que vieram sem DDD
   --so-triagem      Só faz a triagem pelo formato, sem conectar no WhatsApp
@@ -47,7 +47,7 @@ async function main() {
   if (!fs.existsSync(arquivo)) throw new Error(`Arquivo não encontrado: ${arquivo}`);
 
   const planilha = await lerPlanilha(arquivo, { coluna: op.coluna, aba: op.aba, ddd: op.ddd });
-  console.log(`Coluna de telefone: ${planilha.colTel} ("${planilha.nomeColuna}")`);
+  console.log(`Colunas de telefone: ${planilha.nomeColuna}`);
 
   const { porTipo, numeros } = resumir(planilha.linhas);
   console.log('\nTriagem:');
